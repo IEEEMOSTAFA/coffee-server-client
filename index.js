@@ -28,12 +28,13 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-
+// nodemon index.js
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const coffeeCollection = client.db("coffeeDB").collection("coffees");
+    const userCollection = client.db("coffeeDB").collection("user");
 
 
     // Added Multiple Element:::
@@ -90,7 +91,15 @@ async function run() {
   })
   
 
+  // User Related API
 
+
+  app.post('/user', async(req, res) =>{
+    const user = req.body;
+    console.log(user);
+    const result = await userCollection.insertOne(user);
+    res.send(result);
+  });
 
 
 
@@ -119,3 +128,4 @@ app.listen(port, () => {
 
 // Name:: phitron
 // password::::   oz26a53YsEIJMc9c
+// nodemon index.js
