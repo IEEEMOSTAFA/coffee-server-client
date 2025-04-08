@@ -12,9 +12,30 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // module.exports = serverless(app);
 
 // app.use(cors({ origin: 'http://localhost:5173'}));
+
+
+// app.use(cors({
+//   origin: [
+//     'http://localhost:5173',
+//     'https://your-frontend-deployed-url.vercel.app'
+//   ],
+
+//   credentials: true
+// }));
+
+
+
+
+
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
+  origin: [
+    'http://localhost:5173',
+    'https://coffee-store-client.vercel.app', // Replace with your actual frontend URL
+    'https://coffee-store-server-dav2wgaro-ieee-mostafas-projects.vercel.app'
+  ],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -101,12 +122,23 @@ async function run() {
   
 
   // User Related API
-  app.get('/user', async(req, res) =>{
+  // app.get('/user', async(req, res) =>{
+  //   const cursor = userCollection.find();
+  //   const users = await cursor.toArray();
+  //   res.send(users);
+  // })
+
+  // In your backend (index.js)
+app.get('/user', async(req, res) => {
+  try {
     const cursor = userCollection.find();
     const users = await cursor.toArray();
-    res.send(users);
-  })
-
+    res.status(200).send(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+})
   app.post('/user', async(req, res) =>{
     const user = req.body;
     console.log(user);
@@ -176,107 +208,3 @@ app.listen(port, () => {
 
 
 
-
-
-// // api/index.js
-
-// const express = require('express');
-// const cors = require('cors');
-// require('dotenv').config();
-
-// const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-// const serverless = require('serverless-http');
-
-// const app = express();
-// app.use(cors());
-// app.use(express.json());
-
-// // MongoDB connection URI
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.9p6xc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-
-// const client = new MongoClient(uri, {
-//   serverApi: {
-//     version: ServerApiVersion.v1,
-//     strict: true,
-//     deprecationErrors: true,
-//   }
-// });
-
-// // Collections
-// let coffeeCollection;
-// let userCollection;
-
-// async function connectDB() {
-//   try {
-//     await client.connect();
-//     const db = client.db("coffeeDB");
-//     coffeeCollection = db.collection("coffees");
-//     userCollection = db.collection("user");
-//     console.log("Connected to MongoDB");
-//   } catch (error) {
-//     console.error("MongoDB Connection Failed:", error);
-//   }
-// }
-// connectDB();
-
-// // Routes
-// app.get('/', (req, res) => {
-//   res.send('Coffee Maker serverless API is running');
-// });
-
-// // Coffee APIs
-// app.get('/coffee', async (req, res) => {
-//   const result = await coffeeCollection.find().toArray();
-//   res.send(result);
-// });
-
-// app.get('/coffee/:id', async (req, res) => {
-//   const id = req.params.id;
-//   const result = await coffeeCollection.findOne({ _id: new ObjectId(id) });
-//   res.send(result);
-// });
-
-// app.post('/coffee', async (req, res) => {
-//   const result = await coffeeCollection.insertOne(req.body);
-//   res.send(result);
-// });
-
-// app.put('/coffee/:id', async (req, res) => {
-//   const id = req.params.id;
-//   const filter = { _id: new ObjectId(id) };
-//   const updateCoffee = { $set: req.body };
-//   const result = await coffeeCollection.updateOne(filter, updateCoffee, { upsert: true });
-//   res.send(result);
-// });
-
-// app.delete('/coffee/:id', async (req, res) => {
-//   const id = req.params.id;
-//   const result = await coffeeCollection.deleteOne({ _id: new ObjectId(id) });
-//   res.send(result);
-// });
-
-// // User APIs
-// app.get('/user', async (req, res) => {
-//   const result = await userCollection.find().toArray();
-//   res.send(result);
-// });
-
-// app.post('/user', async (req, res) => {
-//   const result = await userCollection.insertOne(req.body);
-//   res.send(result);
-// });
-
-// app.patch('/user', async (req, res) => {
-//   const { email, lastLoggedAt } = req.body;
-//   const result = await userCollection.updateOne({ email }, { $set: { lastLoggedAt } });
-//   res.send(result);
-// });
-
-// app.delete('/user/:id', async (req, res) => {
-//   const id = req.params.id;
-//   const result = await userCollection.deleteOne({ _id: new ObjectId(id) });
-//   res.send(result);
-// });
-
-// // ✅ Correct Export for Serverless
-// module.exports.handler = serverless(app);
