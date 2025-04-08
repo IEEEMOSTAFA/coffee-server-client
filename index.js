@@ -6,8 +6,17 @@ const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // middleware
+// "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
-app.use(cors());
+// const serverless = require('serverless-http');
+// module.exports = serverless(app);
+
+// app.use(cors({ origin: 'http://localhost:5173'}));
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
 app.use(express.json());
 
 
@@ -32,7 +41,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const coffeeCollection = client.db("coffeeDB").collection("coffees");
     const userCollection = client.db("coffeeDB").collection("user");
 
@@ -92,7 +101,11 @@ async function run() {
   
 
   // User Related API
-
+  app.get('/user', async(req, res) =>{
+    const cursor = userCollection.find();
+    const users = await cursor.toArray();
+    res.send(users);
+  })
 
   app.post('/user', async(req, res) =>{
     const user = req.body;
@@ -100,6 +113,27 @@ async function run() {
     const result = await userCollection.insertOne(user);
     res.send(result);
   });
+
+  app.patch('/user', async(req, res) => {
+    const user = req.body;
+    const filter = {email: user.email }
+    const updateDoc = {
+       $set: {
+        lastLoggedAt: user.lastLoggedAt
+       }
+    }
+    const result = await userCollection.updateOne(filter,updateDoc);
+    res.send(result);
+  })
+
+  // Delete Operation
+
+  app.delete('/user/:id',async(req,res) =>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const result = await userCollection.deleteOne(query);
+    res.send(result);
+  })
 
 
 
@@ -129,3 +163,120 @@ app.listen(port, () => {
 // Name:: phitron
 // password::::   oz26a53YsEIJMc9c
 // nodemon index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // api/index.js
+
+// const express = require('express');
+// const cors = require('cors');
+// require('dotenv').config();
+
+// const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+// const serverless = require('serverless-http');
+
+// const app = express();
+// app.use(cors());
+// app.use(express.json());
+
+// // MongoDB connection URI
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.9p6xc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+// const client = new MongoClient(uri, {
+//   serverApi: {
+//     version: ServerApiVersion.v1,
+//     strict: true,
+//     deprecationErrors: true,
+//   }
+// });
+
+// // Collections
+// let coffeeCollection;
+// let userCollection;
+
+// async function connectDB() {
+//   try {
+//     await client.connect();
+//     const db = client.db("coffeeDB");
+//     coffeeCollection = db.collection("coffees");
+//     userCollection = db.collection("user");
+//     console.log("Connected to MongoDB");
+//   } catch (error) {
+//     console.error("MongoDB Connection Failed:", error);
+//   }
+// }
+// connectDB();
+
+// // Routes
+// app.get('/', (req, res) => {
+//   res.send('Coffee Maker serverless API is running');
+// });
+
+// // Coffee APIs
+// app.get('/coffee', async (req, res) => {
+//   const result = await coffeeCollection.find().toArray();
+//   res.send(result);
+// });
+
+// app.get('/coffee/:id', async (req, res) => {
+//   const id = req.params.id;
+//   const result = await coffeeCollection.findOne({ _id: new ObjectId(id) });
+//   res.send(result);
+// });
+
+// app.post('/coffee', async (req, res) => {
+//   const result = await coffeeCollection.insertOne(req.body);
+//   res.send(result);
+// });
+
+// app.put('/coffee/:id', async (req, res) => {
+//   const id = req.params.id;
+//   const filter = { _id: new ObjectId(id) };
+//   const updateCoffee = { $set: req.body };
+//   const result = await coffeeCollection.updateOne(filter, updateCoffee, { upsert: true });
+//   res.send(result);
+// });
+
+// app.delete('/coffee/:id', async (req, res) => {
+//   const id = req.params.id;
+//   const result = await coffeeCollection.deleteOne({ _id: new ObjectId(id) });
+//   res.send(result);
+// });
+
+// // User APIs
+// app.get('/user', async (req, res) => {
+//   const result = await userCollection.find().toArray();
+//   res.send(result);
+// });
+
+// app.post('/user', async (req, res) => {
+//   const result = await userCollection.insertOne(req.body);
+//   res.send(result);
+// });
+
+// app.patch('/user', async (req, res) => {
+//   const { email, lastLoggedAt } = req.body;
+//   const result = await userCollection.updateOne({ email }, { $set: { lastLoggedAt } });
+//   res.send(result);
+// });
+
+// app.delete('/user/:id', async (req, res) => {
+//   const id = req.params.id;
+//   const result = await userCollection.deleteOne({ _id: new ObjectId(id) });
+//   res.send(result);
+// });
+
+// // ✅ Correct Export for Serverless
+// module.exports.handler = serverless(app);
