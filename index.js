@@ -192,8 +192,7 @@ app.listen(port, () => {
 })
 
 
-// Name:: phitron
-// password::::   oz26a53YsEIJMc9c
+
 // nodemon index.js
 
 
